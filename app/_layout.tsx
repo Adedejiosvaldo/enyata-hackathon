@@ -1,13 +1,16 @@
-import { View, Text } from "react-native";
-import React, { useEffect, useCallback } from "react";
+// _layout.tsx
+import { View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
 import { SplashScreen, Stack } from "expo-router";
-import { useFonts } from "expo-font";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import "./global.css";
+import { useFonts } from "expo-font";
 
 // Prevent splash screen from auto hiding
 SplashScreen.preventAutoHideAsync();
 
 const Root = () => {
+  const [isFirstTimeLoad, setIsFirstTimeLoad] = useState(true);
   // Imports fonts
   const [fontsLoaded, err] = useFonts({
     "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
@@ -31,12 +34,28 @@ const Root = () => {
     if (err) throw err;
   }, [err]);
 
+  const checkForFirstTimeLoaded = async () => {
+    const result = await AsyncStorage.getItem("isFirstTimeOpen");
+    if (result !== null) {
+      setIsFirstTimeLoad(false);
+    }
+
+    console.log(isFirstTimeLoad);
+  };
+
+  useEffect(() => {
+    checkForFirstTimeLoaded();
+  }, []);
+
   if (!fontsLoaded && !err) return null;
 
   return (
     <View onLayout={onLayoutRootView} style={{ flex: 1 }}>
       <Stack>
+        <Stack.Screen name="(onboard)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        {/* Remove the index screen from here if you want to avoid showing it */}
       </Stack>
     </View>
   );
